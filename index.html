@@ -64,7 +64,6 @@ body{margin:0;background:linear-gradient(145deg,var(--navy),var(--deep));color:v
 .badge.warm{background:#fdf0d5;color:#8a6208}
 .match-message{background:#f2f0e8;border:1px solid #dedbd1;border-radius:12px;padding:15px;color:#292725;white-space:pre-line;line-height:1.55;font-size:13px}
 .wa{display:block;text-align:center;text-decoration:none;background:#1f9550;color:#fff;border-radius:11px;padding:16px;font-weight:800;font-size:16px;margin-top:16px}
-.callback-btn{width:100%;margin-top:10px;background:#e9e5da;color:#2d2b29;border:1px solid #d5d0c3}
 .match-note{color:#77736e;font-size:12px;line-height:1.5;margin:12px 0 0}
 .optin{margin-top:18px;border-top:1px solid #ddd9d0;padding-top:16px}
 .optin .field label{color:#4a4743}
@@ -89,8 +88,8 @@ body{margin:0;background:linear-gradient(145deg,var(--navy),var(--deep));color:v
 <div class="stepno">Step 1 of 6</div>
 <h2>What is the most you can spend on a home?</h2>
 <p class="hint">Enter the total in naira. We use it to build your payment plan.</p>
-<div class="field"><label for="budget">Your total budget (₦)</label><input id="budget" class="money-input" type="text" inputmode="numeric" autocomplete="off" placeholder="70,000,000"><span class="words" id="budgetWords"></span></div>
-<div class="error" id="e0">Enter the full amount in naira, for example 70,000,000.</div>
+<div class="field"><label for="budget">Your total budget (₦)</label><input id="budget" class="money-input" type="text" inputmode="numeric" autocomplete="off" placeholder="0"><span class="words" id="budgetWords"></span></div>
+<div class="error" id="e0">Enter the full amount in naira.</div>
 <div class="nav"><button type="button" class="btn" id="budgetNext">Build my plan</button></div>
 </section>
 
@@ -170,8 +169,7 @@ body{margin:0;background:linear-gradient(145deg,var(--navy),var(--deep));color:v
 <p class="match-sub" id="resultSub"></p>
 <div class="match-message" id="waMessage"></div>
 <a class="wa" id="wa" href="https://wa.me/2348055414019" target="_blank" rel="noopener noreferrer">Open WhatsApp to send</a>
-<button type="button" class="btn callback-btn" id="callbackBtn">Request a callback instead</button>
-<p class="match-note">WhatsApp opens with a pre-filled message; you still tap Send inside WhatsApp. If WhatsApp is unavailable, use the callback option above.</p>
+<p class="match-note">WhatsApp opens with a pre-filled message; you still tap Send inside WhatsApp.</p>
 </div>
 </section>
 
@@ -347,7 +345,7 @@ budgetEl.addEventListener('input',()=>{
 });
 document.getElementById('budgetNext').addEventListener('click',()=>{
   const n=parseMoney(budgetEl.value);
-  if(!(n>=100000)){showError('e0','Enter the full amount in naira, for example 70,000,000.');return}
+  if(!(n>=100000)){showError('e0','Enter the full amount in naira.');return}
   hideError('e0');
   budget=n;a.budget_amount=n;a.budget=naira(n);
   ga('form_answer',{question:'budget',answer:budgetBand(n)});
@@ -531,8 +529,8 @@ function finalizeMatch(){
   document.getElementById('badge').className='badge'+(hot?'':' warm');
   document.getElementById('resultTitle').textContent=hot?'Your payment plan is ready to send':'Your plan is almost ready';
   document.getElementById('resultSub').textContent=hot
-    ?'Tap the green button, then press Send in WhatsApp so '+AGENT_NAME+' can send your written payment plan and confirm your inspection. Or request a callback.'
-    :'Tap the green button, then press Send in WhatsApp so '+AGENT_NAME+' can walk you through your plan and your options. Or request a callback.';
+    ?'Tap the green button, then press Send in WhatsApp so '+AGENT_NAME+' can send your written payment plan and confirm your inspection.'
+    :'Tap the green button, then press Send in WhatsApp so '+AGENT_NAME+' can walk you through your plan and your options.';
   document.getElementById('waMessage').textContent=msg;
   const wa=document.getElementById('wa');
   wa.href='https://wa.me/'+WHATSAPP_NUMBER+'?text='+encodeURIComponent(msg);
@@ -550,12 +548,6 @@ function finalizeMatch(){
 }
 
 /* ===== MISC UI ===== */
-document.getElementById('callbackBtn').addEventListener('click',async()=>{
-  a.callback_requested='yes';
-  ga('callback_request',{lead_tier:a.lead_tier});
-  await send('callback_requested');
-  const b=document.getElementById('callbackBtn');b.textContent='Callback request recorded';b.disabled=true;
-});
 document.getElementById('f').addEventListener('submit',e=>e.preventDefault());
 ga('funnel_step',{step_number:0,step_name:'budget'});
 budgetEl.addEventListener('focus',()=>once('start',()=>ga('form_start')));
