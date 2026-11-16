@@ -249,10 +249,22 @@ function item(id){return INVENTORY.find(i=>i.id===id)}
 const FORM_VERSION='v5_plan';
 const STEP_NAMES=['budget','fit_result','deposit','funding','timeline','inspection','contact','result','not_a_match'];
 /* GA4 gets every step and answer as coarse codes. It never gets a name, phone number or exact budget. */
-function ga(n,p){try{if(typeof gtag==='function')gtag('event',n,Object.assign({form_version:FORM_VERSION},p||{}))}catch(e){}}
+const BUILD='v5.3 16-Nov no-callback';
+const DIAG=LINK_PARAMS.get('diag')==='1';
+const EVLOG=[];
+function diagLog(k,n){EVLOG.push(k+': '+n);if(DIAG)diagRender()}
+function diagRender(){
+  let el=document.getElementById('diagBox');
+  if(!el){el=document.createElement('div');el.id='diagBox';el.style.cssText='position:fixed;left:0;right:0;top:0;max-height:30vh;overflow:hidden;pointer-events:none;background:rgba(0,0,0,.88);color:#9f9;font:11px/1.35 monospace;padding:6px 8px;z-index:99999';document.body.appendChild(el)}
+  const gaOk=!!(window.google_tag_manager&&window.google_tag_manager['G-5GHLP06H0G']);
+  const fbOk=!!(window.fbq&&window.fbq.loaded&&!window.fbq.queue);
+  el.innerHTML='BUILD '+BUILD+'<br>GA script loaded: '+(gaOk?'YES':'NO (blocked or still loading)')+'<br>Meta script loaded: '+(fbOk?'YES':'NO (blocked or still loading)')+'<hr style="border-color:#333">'+EVLOG.slice().reverse().join('<br>');
+}
+if(DIAG){setInterval(diagRender,1000)}
+function ga(n,p){diagLog('GA',n);try{if(typeof gtag==='function')gtag('event',n,Object.assign({form_version:FORM_VERSION},p||{}))}catch(e){}}
 /* Meta gets BudgetMatched, PassedScreening, Lead and Contact only. No answers, no personal data. */
-function fbCustom(n,p){try{if(typeof fbq==='function')fbq('trackCustom',n,p||{})}catch(e){}}
-function trackStd(n,p){try{if(typeof fbq==='function')fbq('track',n,p||{})}catch(e){}}
+function fbCustom(n,p){diagLog('META custom',n);try{if(typeof fbq==='function')fbq('trackCustom',n,p||{})}catch(e){}}
+function trackStd(n,p){diagLog('META std',n);try{if(typeof fbq==='function')fbq('track',n,p||{})}catch(e){}}
 function budgetBand(n){return n<23000000?'under_23m':n<67000000?'23m_to_66m':n<80000000?'67m_to_79m':'80m_plus'}
 const FIRED={};
 function once(k,fn){if(FIRED[k])return;FIRED[k]=1;fn()}
@@ -322,7 +334,7 @@ function show(i){
   try{history.pushState({step:i},'','#s'+i)}catch(e){}
   ga('funnel_step',{step_number:i,step_name:STEP_NAMES[i]});
   /* They passed every screening question and only the name and number are left. Meta can retarget anyone who reaches this and does not finish. */
-  if(i===6)once('passed',()=>{ga('passed_screening',{home_type:sel.home,budget_band:budgetBand(budget)});fbCustom('PassedScreening')});
+  if(i===6){once('matched',()=>fbCustom('BudgetMatched'));once('passed',()=>{ga('passed_screening',{home_type:sel.home,budget_band:budgetBand(budget)});fbCustom('PassedScreening')})}
 }
 try{history.replaceState({step:0},'','#s0')}catch(e){}
 window.addEventListener('popstate',e=>{
