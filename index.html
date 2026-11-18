@@ -206,9 +206,7 @@ const DEPOSIT_RATE=0.20;
    Replace with real units when you have them. Optional fields per item: area, fees.
    Set PRICES_CONFIRMED_ON (e.g. '12 Nov 2026') after the seller confirms the prices. */
 const INVENTORY=[
-  {id:'studio',label:'Studio / 1-bedroom',price:23000000,area:'Ajah / Sangotedo',fees:''},
-  {id:'two',label:'2-bedroom apartment',price:67000000,area:'Ajah / Sangotedo',fees:''},
-  {id:'three',label:'3-bedroom apartment',price:80000000,area:'Ajah / Sangotedo',fees:''}
+  {id:'two',label:'2-bedroom apartment',price:67000000,area:'Ajah / Sangotedo',fees:''}
 ];
 const PRICES_CONFIRMED_ON='';
 const CAMPAIGN_ID=LINK_PARAMS.get('campaign')||LINK_PARAMS.get('utm_campaign')||'';
@@ -249,7 +247,7 @@ function item(id){return INVENTORY.find(i=>i.id===id)}
 const FORM_VERSION='v5_plan';
 const STEP_NAMES=['budget','fit_result','deposit','funding','timeline','inspection','contact','result','not_a_match'];
 /* GA4 gets every step and answer as coarse codes. It never gets a name, phone number or exact budget. */
-const BUILD='v5.3 16-Nov no-callback';
+const BUILD='v5.4 18-Nov 2bed-only';
 const DIAG=LINK_PARAMS.get('diag')==='1';
 const EVLOG=[];
 function diagLog(k,n){EVLOG.push(k+': '+n);if(DIAG)diagRender()}
@@ -265,7 +263,7 @@ function ga(n,p){diagLog('GA',n);try{if(typeof gtag==='function')gtag('event',n,
 /* Meta gets BudgetMatched, PassedScreening, Lead and Contact only. No answers, no personal data. */
 function fbCustom(n,p){diagLog('META custom',n);try{if(typeof fbq==='function')fbq('trackCustom',n,p||{})}catch(e){}}
 function trackStd(n,p){diagLog('META std',n);try{if(typeof fbq==='function')fbq('track',n,p||{})}catch(e){}}
-function budgetBand(n){return n<23000000?'under_23m':n<67000000?'23m_to_66m':n<80000000?'67m_to_79m':'80m_plus'}
+function budgetBand(n){return n<67000000?'under_67m':n<100000000?'67m_to_99m':'100m_plus'}
 const FIRED={};
 function once(k,fn){if(FIRED[k])return;FIRED[k]=1;fn()}
 function dbg(m){if(!DEBUG)return;let el=document.getElementById('dbg');if(!el){el=document.createElement('pre');el.id='dbg';el.style.cssText='position:fixed;left:0;right:0;bottom:0;max-height:40vh;overflow:auto;margin:0;padding:8px;background:rgba(0,0,0,.88);color:#9f9;font:11px/1.4 monospace;z-index:9999;white-space:pre-wrap';document.body.appendChild(el)}el.textContent+=m+'\n'}
@@ -389,7 +387,7 @@ function computeFit(){
     grid.appendChild(b);
   });
   document.getElementById('fitTitle').textContent=matches.length===1?'Your plan starts with this home':'Pick the home for your plan';
-  document.getElementById('fitNote').innerHTML='Your budget: <strong>'+naira(budget)+'</strong>. These ready-to-move-in homes in Ajah / Sangotedo fit it. Tap the one you want your payment plan built around.';
+  document.getElementById('fitNote').innerHTML='Your budget: <strong>'+naira(budget)+'</strong>. '+(matches.length===1?'This ready-to-move-in home in Ajah / Sangotedo fits it. Your payment plan is built around it.':'These ready-to-move-in homes in Ajah / Sangotedo fit it. Tap the one you want your payment plan built around.');
   document.getElementById('fitFine').textContent='Prices shown are starting prices'+(PRICES_CONFIRMED_ON?' (confirmed '+PRICES_CONFIRMED_ON+')':'')+'. They do not include legal, agency or survey fees or any other charges. Bamidele confirms the full cost in writing on WhatsApp before you commit.';
   const next=steps[1].querySelector('.next');
   if(matches.length===1){grid.firstChild.classList.add('selected');sel.home=matches[0].id;next.disabled=false}else{next.disabled=!sel.home;if(sel.home){const c=grid.querySelector('[data-value="'+sel.home+'"]');if(c)c.classList.add('selected')}}
