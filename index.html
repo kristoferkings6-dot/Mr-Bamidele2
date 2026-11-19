@@ -392,6 +392,7 @@ function computeFit(){
   const next=steps[1].querySelector('.next');
   if(matches.length===1){grid.firstChild.classList.add('selected');sel.home=matches[0].id;next.disabled=false}else{next.disabled=!sel.home;if(sel.home){const c=grid.querySelector('[data-value="'+sel.home+'"]');if(c)c.classList.add('selected')}}
   once('matched',()=>fbCustom('BudgetMatched'));
+  once('viewcontent',()=>trackStd('ViewContent'));
   show(1);
 }
 
@@ -549,10 +550,10 @@ function finalizeMatch(){
     a.whatsapp_handoff_clicked='yes';
     a.whatsapp_handoff_clicked_at=new Date().toISOString();
     ga('whatsapp_click',{lead_tier:a.lead_tier});
-    trackStd('Contact',{content_name:'whatsapp_handoff',lead_tier:a.lead_tier});
+    trackStd('Contact');
     send('whatsapp_clicked');
   };
-  trackStd('Lead',{content_name:'qualified_buyer',lead_tier:a.lead_tier});
+  trackStd('Lead');
   ga('qualified_lead',{lead_tier:a.lead_tier,home_type:sel.home,budget_band:budgetBand(budget)});
   show(7);
 }
